@@ -1,27 +1,27 @@
-/*set libname as r*/
+/*setting libname as r*/
 
 Libname r "S:\Data";
 run;
 
-/*set libname of actual XPT file*/
+/*setting libname of actual XPT file*/
 
 Libname XPTfile xport 'S:\Data\LLCP2014.XPT';
 run;
 
 /*data step reads it in and unpacks it into libname mapped to r*/
 
-data r.BRFSS_a;
+data r.BRFSS_1;
     set XPTfile.LLCP2014;
 run;
 
-/*verify success*/
+/*verifying success*/
 
-proc contents data=r.BRFSS_a;
+proc contents data=r.BRFSS_1;
 run;
 
 
-data r.BRFSS_b;
-	set r.BRFSS_a (keep =
+data r.BRFSS_2;
+	set r.BRFSS_1 (keep =
 		VETERAN3 
 		ASTHMA3
 		DIABETE3
@@ -41,14 +41,14 @@ data r.BRFSS_b;
 		EXERANY2);
 run;
 
-proc contents data = r.BRFSS_b;
+proc contents data = r.BRFSS_2;
 run;
 
 /*If you want to keep most of the variables, then use
 the drop command instead*/
 
 data Drop_Example;
-	set r.BRFSS_a (drop =
+	set r.BRFSS_1 (drop =
 		VETERAN3 
 		ASTHMA3
 		DIABETE3
@@ -73,65 +73,65 @@ run;
 
 /*proc freq without options*/
 
-proc freq data=r.BRFSS_b;
+proc freq data=r.BRFSS_2;
 	tables VETERAN3;
 run;
 
-/*check exclusions with the missing option*/
+/*Checking exclusions with the missing option*/
 
-proc freq data=r.BRFSS_b;
+proc freq data=r.BRFSS_2;
 	tables VETERAN3 / missing;
 	tables DIABETE3 / missing;
 	tables SLEPTIM1 / missing;
 	tables ASTHMA3 / missing;
 run;
 
-/*apply veteran exclusion*/
+/*applying veteran exclusion*/
 
-data r.BRFSS_c;
-	set r.BRFSS_b;
+data r.BRFSS_3;
+	set r.BRFSS_2;
 	if VETERAN3 = 1;
 run;
 
 /*alternative using delete option*/
 
 data Delete_Example;
-	set r.BRFSS_b;
+	set r.BRFSS_2;
 	if VETERAN3 ne 1 then delete;
 run;
 
-/*apply diabetes exclusion*/
+/*applying diabetes exclusion*/
 
-data r.BRFSS_d;
-	set r.BRFSS_c;
+data r.BRFSS_4;
+	set r.BRFSS_3;
 	if DIABETE3 in (1, 2, 3, 4);
 run;
 
-/*apply asthma exclusion*/
+/*applying asthma exclusion*/
 
-data r.BRFSS_e;
-	set r.BRFSS_d;
+data r.BRFSS_5;
+	set r.BRFSS_4;
 	if ASTHMA3 in (1, 2);
 run;
 
-/*Keep only those with SLEPTIM1 <77
+/*Keeping only those with SLEPTIM1 <77
 because 1 through 24 are valid, and 77 and 99 are not.*/
 
-data r.BRFSS_f;
-	set r.BRFSS_e;
+data r.BRFSS_6;
+	set r.BRFSS_5;
 	if SLEPTIM1 < 77;
 run;
 
 /*alternative using other operators*/
 
 data Other_Operators;
-	set r.BRFSS_e;
+	set r.BRFSS_5;
 	if SLEPTIM1 ge 77 then delete;
 run;
-/*Create recode of DIABETE3 in DIABETE4*/
+/*creating recode of DIABETE3 in DIABETE4*/
 
-data r.BRFSS_g;
-	set r.BRFSS_f;
+data r.BRFSS_7;
+	set r.BRFSS_6;
 
 	DIABETE4 = 9;
 	
@@ -143,24 +143,24 @@ data r.BRFSS_g;
 
 run;
 
-/*Check recode*/
+/*Checking recode*/
 
 /*proc freq without list option*/
 
-proc freq data=r.BRFSS_g;
+proc freq data=r.BRFSS_7;
 	table DIABETE3 * DIABETE4 / missing;
 run;
 
 /*Much easier to read with list option!*/
 
-proc freq data=r.BRFSS_g;
+proc freq data=r.BRFSS_7;
 	table DIABETE3 * DIABETE4 / list missing;
 run;
 /*first create NEVERSMK, then create grouping variable
 based on NEVERSMK and SMOKDAY2*/
 
-data r.BRFSS_h;
-	set r.BRFSS_g;
+data r.BRFSS_8;
+	set r.BRFSS_7;
 
 	NEVERSMK = 0;
 
@@ -176,16 +176,16 @@ data r.BRFSS_h;
 	
 run;
 
-/*Check recode for inconsistencies*/
+/*Checking recode for inconsistencies*/
 
-proc freq data=r.BRFSS_h;
+proc freq data=r.BRFSS_8;
 	table NEVERSMK * SMOKE100 / list missing;
 	table SMOKGRP * SMOKDAY2 / list missing;
 run;
-/*create rest of grouping variables*/
+/*creating rest of grouping variables*/
 
-data r.BRFSS_i;
-	set r.BRFSS_h;
+data r.BRFSS_9;
+	set r.BRFSS_8;
 
 	MARGRP = 9;
 
@@ -242,7 +242,7 @@ data r.BRFSS_i;
 
 run;
 
-proc freq data=r.BRFSS_i;
+proc freq data=r.BRFSS_9;
 	table MARGRP * MARITAL / list missing;
 	table EDGROUP * EDUCA / list missing;
 	table GENHLTH2 * GENHLTH / list missing;
@@ -257,8 +257,8 @@ run;
 
 /*indicator variables for age group*/
 
-data r.BRFSS_j;
-	set r.BRFSS_i;
+data r.BRFSS_9;
+	set r.BRFSS_9;
 
 	AGE2 = 0;
 	if _AGE_G = 2
@@ -282,7 +282,7 @@ data r.BRFSS_j;
 
 run;
 
-proc freq data=r.BRFSS_j;
+proc freq data=r.BRFSS_9;
 	tables AGE2*_AGE_G/list missing;
 	tables AGE3*_AGE_G/list missing;
 	tables AGE4*_AGE_G/list missing;
@@ -292,8 +292,8 @@ run;
 
 /*indicator variables for income*/
 
-data r.BRFSS_k;
-	set r.BRFSS_j;
+data r.BRFSS_10;
+	set r.BRFSS_9;
 
 	INC1 = 0;
 	if INCOME3 = 1
@@ -325,7 +325,7 @@ data r.BRFSS_k;
 
 run;
 
-proc freq data=r.BRFSS_k;
+proc freq data=r.BRFSS_10;
 	tables INC1*INCOME3/list missing;
 	tables INC2*INCOME3/list missing;
 	tables INC3*INCOME3/list missing;
@@ -338,8 +338,8 @@ run;
 
 /*indicator variables for race*/
 
-data r.BRFSS_l;
-	set r.BRFSS_k;
+data r.BRFSS_11;
+	set r.BRFSS_10;
 
 	BLACK = 0;
 	if RACEGRP = 2
@@ -355,7 +355,7 @@ data r.BRFSS_l;
 
 run;
 
-proc freq data=r.BRFSS_l;
+proc freq data=r.BRFSS_11;
 	tables BLACK*RACEGRP/list missing;
 	tables ASIAN*RACEGRP/list missing;
 	tables OTHRACE*RACEGRP/list missing;
@@ -363,8 +363,8 @@ run;
 
 /*indicator variables for marital status*/
 
-data r.BRFSS_m;
-	set r.BRFSS_l;
+data r.BRFSS_13;
+	set r.BRFSS_11;
 
 	NEVERMAR = 0;
 	if MARGRP = 3
@@ -376,15 +376,15 @@ data r.BRFSS_m;
 
 run;
 
-proc freq data=r.BRFSS_m;
+proc freq data=r.BRFSS_13;
 	tables NEVERMAR*MARGRP/list missing;
 	tables FORMERMAR*MARGRP/list missing;
 run;
 
 /*indicator variables for education*/
 
-data r.BRFSS_n;
-	set r.BRFSS_m;
+data r.BRFSS_14;
+	set r.BRFSS_13;
 
 	LOWED = 0;
 	if EDGROUP in (1,2)
@@ -396,15 +396,15 @@ data r.BRFSS_n;
 
 run;
 
-proc freq data=r.BRFSS_n;
+proc freq data=r.BRFSS_14;
 	tables LOWED*EDGROUP/list missing;
 	tables SOMECOLL*EDGROUP/list missing;
 run;
 
 /*indicator variables for BMI*/
 
-data r.BRFSS_o;
-	set r.BRFSS_n;
+data r.BRFSS_15;
+	set r.BRFSS_14;
 
 	UNDWT = 0;
 	if BMICAT = 1
@@ -420,7 +420,7 @@ data r.BRFSS_o;
 
 run;
 
-proc freq data=r.BRFSS_o;
+proc freq data=r.BRFSS_15;
 	tables UNDWT*BMICAT/list missing;
 	tables OVWT*BMICAT/list missing;
 	tables OBESE*BMICAT/list missing;
@@ -428,8 +428,8 @@ run;
 
 /*indicator variables for general health*/
 
-data r.BRFSS_p;
-	set r.BRFSS_o;
+data r.BRFSS_16;
+	set r.BRFSS_15;
 
 	FAIRHLTH = 0;
 	if GENHLTH2 = 4
@@ -441,15 +441,15 @@ data r.BRFSS_p;
 
 run;
 
-proc freq data=r.BRFSS_p;
+proc freq data=r.BRFSS_16;
 	tables FAIRHLTH*GENHLTH2/list missing;
 	tables POORHLTH*GENHLTH2/list missing;
 run;
 
 /*indicator variables for three-level grouping variables*/
 
-data r.BRFSS_q;
-	set r.BRFSS_p;
+data r.BRFSS_17;
+	set r.BRFSS_16;
 	
 	ASTHMAFLAG = 0;
 	if ASTHMA3 = 1
@@ -481,7 +481,7 @@ data r.BRFSS_q;
 
 run;
 
-proc freq data=r.BRFSS_q;
+proc freq data=r.BRFSS_17;
 	tables ASTHMAFLAG*ASTHMA3/list missing;
 	tables DIABFLAG*DIABETE3/list missing;
 	tables MALE*SEX/list missing;
@@ -492,13 +492,13 @@ proc freq data=r.BRFSS_q;
 run;
 /*Review distribution of sleep duration*/
 
-proc univariate data = r.BRFSS_p;
+proc univariate data = r.BRFSS_16;
 	var SLEPTIM1;
 run;
 
 /*May be helpful to look at frequencies*/
 
-proc freq data = r.BRFSS_p;
+proc freq data = r.BRFSS_16;
 	tables SLEPTIM1 /missing;
 run;
 
@@ -506,7 +506,7 @@ run;
 /*Example: Create arbitrary grouping*/
 
 data Grouping_Example;
-	set r.BRFSS_p;
+	set r.BRFSS_16;
 
 	SLEEPGRP = 9;
 
@@ -536,7 +536,7 @@ data Grouping_Example;
 
 run;
 
-/*check recode*/
+/*Checking recode*/
 
 proc freq data=Grouping_Example;
 	tables SLEPTIM1*SLEEPGRP/list missing;
@@ -548,14 +548,14 @@ run;
 
 /*SLEPTIM1 in the original dataset has ineligible values*/
 
-proc freq data = r.BRFSS_a;
+proc freq data = r.BRFSS_1;
 	tables SLEPTIM1 /missing;
 run;
 
-/*Create SLEPTIM2 suppressing ineligible values*/
+/*creating SLEPTIM2 suppressing ineligible values*/
 
 data Clean_Example;
-	set r.BRFSS_a;
+	set r.BRFSS_1;
 
 	SLEPTIM2 = SLEPTIM1;
 
@@ -564,7 +564,7 @@ data Clean_Example;
 
 run;
 
-/*Check recode with PROC FREQ*/
+/*Checking recode with PROC FREQ*/
 
 proc freq data = Clean_Example;
 	tables SLEPTIM1*SLEPTIM2/list missing;
@@ -581,7 +581,7 @@ run;
 /*we can see them in the order in which they         */
 /*were created.                                      */
 
-proc contents varnum data = r.BRFSS_q;
+proc contents varnum data = r.BRFSS_17;
 run;
 
 /*copy to a dataset named "analytic"*/
@@ -591,7 +591,7 @@ run;
 /*that code should come before this code.*/
 
 data r.analytic;
-	set r.BRFSS_q;
+	set r.BRFSS_17;
 
 run;
 proc contents varnum data = r.analytic;
@@ -640,9 +640,9 @@ PROC GCHART DATA=r.analytic;
 RUN;
 
 /*Histogram of _AGE80 (age) with 20 levels*/
-/*in BRFSS_a*/
+/*in BRFSS_1*/
 
-PROC GCHART DATA=r.BRFSS_a;
+PROC GCHART DATA=r.BRFSS_1;
       VBAR _AGE80 / LEVELS=20;
 RUN;
 
@@ -660,11 +660,11 @@ PROC SGPLOT  DATA = r.analytic;
 run;
 
 
-/*Create SLEPTIM2 in Scatter_Example by suppressing ineligible values*/
+/*creating SLEPTIM2 in Scatter_Example by suppressing ineligible values*/
 /*for SLEPTIM1 so we can use it in a scatter plot*/
 
 data Clean_Example;
-	set r.BRFSS_a;
+	set r.BRFSS_1;
 
 	SLEPTIM2 = SLEPTIM1;
 
@@ -983,13 +983,13 @@ proc glm data = r.analytic PLOTS(MAXPOINTS=NONE);
 run;
 
 // Linear Regression
-/*check linearity and normality assumptions with univariate plots for SLEPTIM1*/
+/*Checking linearity and normality assumptions with univariate plots for SLEPTIM1*/
 
 proc univariate data = r.analytic plots;
 	var SLEPTIM1;
 run;
 
-/*check homoscedasticity assumptions with residual plot from PROC REG*/
+/*Checking homoscedasticity assumptions with residual plot from PROC REG*/
 
 proc reg data=r.analytic;
 	model SLEPTIM1 = DIABFLAG;
@@ -1002,255 +1002,7 @@ PROC GLM data = r.analytic;
 	model SLEPTIM1 = DIABFLAG;
 run;
 
-/*Model 2*/
-
-PROC GLM data = r.analytic;
-	model SLEPTIM1 = DIABFLAG MALE AGE2 AGE3 AGE4 AGE5 AGE6;
-run;
-
-/*start with Model 2 without insignificant covariates*/
-
-/*Model 3*/
-
-PROC GLM data = r.analytic;
-	model SLEPTIM1 = DIABFLAG AGE4 AGE5 AGE6;
-run;
-
-/*Model 4 - add HISPANIC*/
-
-PROC GLM data = r.analytic;
-	model SLEPTIM1 = DIABFLAG AGE4 AGE5 AGE6 HISPANIC;
-run;
-
-/*Model 5 - add race*/
-
-PROC GLM data = r.analytic;
-	model SLEPTIM1 = DIABFLAG AGE4 AGE5 AGE6 HISPANIC BLACK ASIAN OTHRACE;
-run;
-
-/*Model 6 - add marital status*/
-
-PROC GLM data = r.analytic;
-	model SLEPTIM1 = DIABFLAG AGE4 AGE5 AGE6 HISPANIC BLACK ASIAN OTHRACE 
-		NEVERMAR FORMERMAR;
-run;
-
-/*Model 7 - take out NEVERMAR*/
-
-PROC GLM data = r.analytic;
-	model SLEPTIM1 = DIABFLAG AGE4 AGE5 AGE6 HISPANIC BLACK ASIAN OTHRACE 
-		FORMERMAR;
-run;
-
-/*Model 8 - add education*/
-
-PROC GLM data = r.analytic;
-	model SLEPTIM1 = DIABFLAG AGE4 AGE5 AGE6 HISPANIC BLACK ASIAN OTHRACE 
-		FORMERMAR LOWED SOMECOLL;
-run;
-
-/*Model 9 - add income*/
-
-PROC GLM data = r.analytic;
-	model SLEPTIM1 = DIABFLAG AGE4 AGE5 AGE6 HISPANIC BLACK ASIAN OTHRACE 
-		FORMERMAR LOWED SOMECOLL INC1 INC2 INC3 INC4 INC5 INC6 INC7;
-run;
-
-/*Model 10 - take out non-significant*/
-
-PROC GLM data = r.analytic;
-	model SLEPTIM1 = DIABFLAG AGE4 AGE5 AGE6 HISPANIC BLACK ASIAN OTHRACE 
-		FORMERMAR SOMECOLL INC1 INC2 INC3 INC6 INC7;
-run;
-
-/*Model 11 - add asthma flag*/
-
-PROC GLM data = r.analytic;
-	model SLEPTIM1 = DIABFLAG AGE4 AGE5 AGE6 HISPANIC BLACK ASIAN OTHRACE 
-		FORMERMAR SOMECOLL INC1 INC2 INC3 INC6 INC7 ASTHMAFLAG;
-run;
-
-/*Model 12 - add BMI categories*/
-
-PROC GLM data = r.analytic;
-	model SLEPTIM1 = DIABFLAG AGE4 AGE5 AGE6 HISPANIC BLACK ASIAN OTHRACE 
-		FORMERMAR SOMECOLL INC1 INC2 INC3 INC6 INC7 ASTHMAFLAG
-		UNDWT OVWT OBESE;
-run;
-
-/*Model 13 - remove UNDWT*/
-
-PROC GLM data = r.analytic;
-	model SLEPTIM1 = DIABFLAG AGE4 AGE5 AGE6 HISPANIC BLACK ASIAN OTHRACE 
-		FORMERMAR SOMECOLL INC1 INC2 INC3 INC6 INC7 ASTHMAFLAG
-		OVWT OBESE;
-run;
-
-/*Model 14 - add smoker*/
-
-PROC GLM data = r.analytic;
-	model SLEPTIM1 = DIABFLAG AGE4 AGE5 AGE6 HISPANIC BLACK ASIAN OTHRACE 
-		FORMERMAR SOMECOLL INC1 INC2 INC3 INC6 INC7 ASTHMAFLAG
-		OVWT OBESE SMOKER;
-run;
-
-/*Model 15 - remove INC6 and INC7*/
-
-PROC GLM data = r.analytic;
-	model SLEPTIM1 = DIABFLAG AGE4 AGE5 AGE6 HISPANIC BLACK ASIAN OTHRACE 
-		FORMERMAR SOMECOLL INC1 INC2 INC3 ASTHMAFLAG
-		OVWT OBESE SMOKER;
-run;
-
-/*Model 16 - add NOEXER*/
-
-PROC GLM data = r.analytic;
-	model SLEPTIM1 = DIABFLAG AGE4 AGE5 AGE6 HISPANIC BLACK ASIAN OTHRACE 
-		FORMERMAR SOMECOLL INC1 INC2 INC3 ASTHMAFLAG
-		OVWT OBESE SMOKER NOEXER;
-run;
-
-/*Model 17 - remove NOEXER, add NOPLAN*/
-
-PROC GLM data = r.analytic;
-	model SLEPTIM1 = DIABFLAG AGE4 AGE5 AGE6 HISPANIC BLACK ASIAN OTHRACE 
-		FORMERMAR SOMECOLL INC1 INC2 INC3 ASTHMAFLAG
-		OVWT OBESE SMOKER NOPLAN;
-run;
-
-/*Model 18 - remove NOPLAN, add general health flags*/
-
-PROC GLM data = r.analytic;
-	model SLEPTIM1 = DIABFLAG AGE4 AGE5 AGE6 HISPANIC BLACK ASIAN OTHRACE 
-		FORMERMAR SOMECOLL INC1 INC2 INC3 ASTHMAFLAG
-		OVWT OBESE SMOKER FAIRHLTH POORHLTH;
-run;
-
-/*Model 19 - remove INC1 and INC3*/
-
-PROC GLM data = r.analytic;
-	model SLEPTIM1 = DIABFLAG AGE4 AGE5 AGE6 HISPANIC BLACK ASIAN OTHRACE 
-		FORMERMAR SOMECOLL INC2 ASTHMAFLAG
-		OVWT OBESE SMOKER FAIRHLTH POORHLTH;
-run;
-
-/*Model 20 - remove INC 2 - ROUND 1 Working Model*/
-
-PROC GLM data = r.analytic;
-	model SLEPTIM1 = DIABFLAG AGE4 AGE5 AGE6 HISPANIC BLACK ASIAN OTHRACE 
-		FORMERMAR SOMECOLL ASTHMAFLAG
-		OVWT OBESE SMOKER FAIRHLTH POORHLTH;
-run;
-
-/*Model 21 - add back MALE*/
-
-PROC GLM data = r.analytic;
-	model SLEPTIM1 = DIABFLAG AGE4 AGE5 AGE6 HISPANIC BLACK ASIAN OTHRACE 
-		FORMERMAR SOMECOLL ASTHMAFLAG
-		OVWT OBESE SMOKER FAIRHLTH POORHLTH
-		MALE;
-run;
-
-/*Model 22 - take out MALE, add back AGE2 - NEW WORKING MODEL*/
-
-PROC GLM data = r.analytic;
-	model SLEPTIM1 = DIABFLAG AGE4 AGE5 AGE6 HISPANIC BLACK ASIAN OTHRACE 
-		FORMERMAR SOMECOLL ASTHMAFLAG
-		OVWT OBESE SMOKER FAIRHLTH POORHLTH
-		AGE2;
-run;
-
-/*Model 23 - add back MALE*/
-
-PROC GLM data = r.analytic;
-	model SLEPTIM1 = DIABFLAG AGE4 AGE5 AGE6 HISPANIC BLACK ASIAN OTHRACE 
-		FORMERMAR SOMECOLL ASTHMAFLAG
-		OVWT OBESE SMOKER FAIRHLTH POORHLTH
-		AGE2 MALE;
-run;
-
-/*Model 24 - take out MALE, add back AGE3*/
-
-PROC GLM data = r.analytic;
-	model SLEPTIM1 = DIABFLAG AGE4 AGE5 AGE6 HISPANIC BLACK ASIAN OTHRACE 
-		FORMERMAR SOMECOLL ASTHMAFLAG
-		OVWT OBESE SMOKER FAIRHLTH POORHLTH
-		AGE2 AGE3;
-run;
-
-/*Model 25 - take out AGE2 but keep AGE3 - NEW WORKING MODEL*/
-
-PROC GLM data = r.analytic;
-	model SLEPTIM1 = DIABFLAG AGE4 AGE5 AGE6 HISPANIC BLACK ASIAN OTHRACE 
-		FORMERMAR SOMECOLL ASTHMAFLAG
-		OVWT OBESE SMOKER FAIRHLTH POORHLTH
-		AGE3;
-run;
-
-/*Model 26 - add back MALE*/
-
-PROC GLM data = r.analytic;
-	model SLEPTIM1 = DIABFLAG AGE4 AGE5 AGE6 HISPANIC BLACK ASIAN OTHRACE 
-		FORMERMAR SOMECOLL ASTHMAFLAG
-		OVWT OBESE SMOKER FAIRHLTH POORHLTH
-		AGE3 MALE;
-run;
-
-/*Model 27 - remove MALE, add back NEVERMAR*/
-
-PROC GLM data = r.analytic;
-	model SLEPTIM1 = DIABFLAG AGE4 AGE5 AGE6 HISPANIC BLACK ASIAN OTHRACE 
-		FORMERMAR SOMECOLL ASTHMAFLAG
-		OVWT OBESE SMOKER FAIRHLTH POORHLTH
-		AGE3 NEVERMAR;
-run;
-
-/*Model 28 - remove NEVERMAR, add back LOWED*/
-
-PROC GLM data = r.analytic;
-	model SLEPTIM1 = DIABFLAG AGE4 AGE5 AGE6 HISPANIC BLACK ASIAN OTHRACE 
-		FORMERMAR SOMECOLL ASTHMAFLAG
-		OVWT OBESE SMOKER FAIRHLTH POORHLTH
-		AGE3 LOWED;
-run;
-
-/*Model 29 - remove LOWED, add back INC1*/
-
-PROC GLM data = r.analytic;
-	model SLEPTIM1 = DIABFLAG AGE4 AGE5 AGE6 HISPANIC BLACK ASIAN OTHRACE 
-		FORMERMAR SOMECOLL ASTHMAFLAG
-		OVWT OBESE SMOKER FAIRHLTH POORHLTH
-		AGE3 INC1;
-run;
-
-/*Model 30 - remove INC1, add back INC2*/
-
-PROC GLM data = r.analytic;
-	model SLEPTIM1 = DIABFLAG AGE4 AGE5 AGE6 HISPANIC BLACK ASIAN OTHRACE 
-		FORMERMAR SOMECOLL ASTHMAFLAG
-		OVWT OBESE SMOKER FAIRHLTH POORHLTH
-		AGE3 INC2;
-run;
-
-/*Model 31 - remove INC2, add back INC3*/
-
-PROC GLM data = r.analytic;
-	model SLEPTIM1 = DIABFLAG AGE4 AGE5 AGE6 HISPANIC BLACK ASIAN OTHRACE 
-		FORMERMAR SOMECOLL ASTHMAFLAG
-		OVWT OBESE SMOKER FAIRHLTH POORHLTH
-		AGE3 INC3;
-run;
-
-/*Model 32 - remove INC3, add back INC4*/
-
-PROC GLM data = r.analytic;
-	model SLEPTIM1 = DIABFLAG AGE4 AGE5 AGE6 HISPANIC BLACK ASIAN OTHRACE 
-		FORMERMAR SOMECOLL ASTHMAFLAG
-		OVWT OBESE SMOKER FAIRHLTH POORHLTH
-		AGE3 INC4;
-run;
-
-/*Model 33 - remove INC4, add back INC5 - NEW WORKING MODEL*/
+/*Model 2 - remove INC4, add back INC5 - NEW WORKING MODEL*/
 
 PROC GLM data = r.analytic;
 	model SLEPTIM1 = DIABFLAG AGE4 AGE5 AGE6 HISPANIC BLACK ASIAN OTHRACE 
@@ -1258,77 +1010,3 @@ PROC GLM data = r.analytic;
 		OVWT OBESE SMOKER FAIRHLTH POORHLTH
 		AGE3 INC5;
 run;
-
-/*Model 34 - add back MALE*/
-
-PROC GLM data = r.analytic;
-	model SLEPTIM1 = DIABFLAG AGE4 AGE5 AGE6 HISPANIC BLACK ASIAN OTHRACE 
-		FORMERMAR SOMECOLL ASTHMAFLAG
-		OVWT OBESE SMOKER FAIRHLTH POORHLTH
-		AGE3 INC5 MALE;
-run;
-
-/*Model 35 - add back AGE2*/
-
-PROC GLM data = r.analytic;
-	model SLEPTIM1 = DIABFLAG AGE4 AGE5 AGE6 HISPANIC BLACK ASIAN OTHRACE 
-		FORMERMAR SOMECOLL ASTHMAFLAG
-		OVWT OBESE SMOKER FAIRHLTH POORHLTH
-		AGE3 INC5 AGE2;
-run;
-
-/*Model 36 - add back NEVERMAR*/
-
-PROC GLM data = r.analytic;
-	model SLEPTIM1 = DIABFLAG AGE4 AGE5 AGE6 HISPANIC BLACK ASIAN OTHRACE 
-		FORMERMAR SOMECOLL ASTHMAFLAG
-		OVWT OBESE SMOKER FAIRHLTH POORHLTH
-		AGE3 INC5 NEVERMAR;
-run;
-
-/*Model 37 - add back LOWED*/
-
-PROC GLM data = r.analytic;
-	model SLEPTIM1 = DIABFLAG AGE4 AGE5 AGE6 HISPANIC BLACK ASIAN OTHRACE 
-		FORMERMAR SOMECOLL ASTHMAFLAG
-		OVWT OBESE SMOKER FAIRHLTH POORHLTH
-		AGE3 INC5 LOWED;
-run;
-
-/*Model 38 - add back UNDWT*/
-
-PROC GLM data = r.analytic;
-	model SLEPTIM1 = DIABFLAG AGE4 AGE5 AGE6 HISPANIC BLACK ASIAN OTHRACE 
-		FORMERMAR SOMECOLL ASTHMAFLAG
-		OVWT OBESE SMOKER FAIRHLTH POORHLTH
-		AGE3 INC5 UNDWT;
-run;
-
-/*Model 39 - add back NOEXER*/
-
-PROC GLM data = r.analytic;
-	model SLEPTIM1 = DIABFLAG AGE4 AGE5 AGE6 HISPANIC BLACK ASIAN OTHRACE 
-		FORMERMAR SOMECOLL ASTHMAFLAG
-		OVWT OBESE SMOKER FAIRHLTH POORHLTH
-		AGE3 INC5 NOEXER;
-run;
-
-/*Model 40 - add back NOPLAN*/
-
-PROC GLM data = r.analytic;
-	model SLEPTIM1 = DIABFLAG AGE4 AGE5 AGE6 HISPANIC BLACK ASIAN OTHRACE 
-		FORMERMAR SOMECOLL ASTHMAFLAG
-		OVWT OBESE SMOKER FAIRHLTH POORHLTH
-		AGE3 INC5 NOPLAN;
-run;
-
-/*Model 41 - add back INC7*/
-
-PROC GLM data = r.analytic;
-	model SLEPTIM1 = DIABFLAG AGE4 AGE5 AGE6 HISPANIC BLACK ASIAN OTHRACE 
-		FORMERMAR SOMECOLL ASTHMAFLAG
-		OVWT OBESE SMOKER FAIRHLTH POORHLTH
-		AGE3 INC5 INC7;
-run;
-
-/*INC7 is not significant - final model is Model 33*/
